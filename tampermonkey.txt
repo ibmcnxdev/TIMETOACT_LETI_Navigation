@@ -1,0 +1,126 @@
+// ==UserScript==
+// @name         New Userscript
+// @namespace    http://tampermonkey.net/
+// @version      0.1
+// @description  try to take over the world!
+// @author       You
+// @match        https://apps.ce.collabserv.com/*
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    const {container, wikiID, wikiURL} = {
+        container: "nav_bar_include",
+        wikiID:"W43496eaaca84_415f_9430_161a8fa71f65",
+        wikiURL: '/wikis/basic/api/wiki/'
+    };
+
+    function getWikiFeed(url, isJSON, callback) {
+			let request = new XMLHttpRequest();
+
+			request.open('GET', url);
+			request.onload = function() {
+                try {
+                    isJSON ? callback(JSON.parse(this.response)) : callback(this.responseXML);
+                }
+                catch (err){
+                    console.warn("Error", err);
+                }
+                /*
+				// Now the entire header-menu is there
+				document.querySelector(".lotusLinks").style.opacity = "1";
+				document.querySelector(".lotusUtility").style.opacity = "1";
+				document.querySelector(".lotusLogo").style.opacity = "1";
+                */
+			};
+			request.send();
+    }
+
+    function retrieveUrl(wikiPageId, event) {
+
+			function getCurrentServletUrl(currentServlet) {
+				// If we are in Communities, we will use /xcc/main
+				// if we are in on premise, we will cut the url for # (if you got CNX Widgets/RC/AS)
+				// because the url can something like that: https://dev.cnx.local/xcc/main#myStream/imFollowing/all
+				// if we are in cloud/global we will cut for ?
+
+
+				if (!currentServlet) {
+					currentServlet = window.location.href.indexOf("/xcc/") > -1 ? (W.location.href + "?").split("?")[0].split("#")[0] : "/xcc/main";
+				}
+				return currentServlet;
+			};
+
+
+			getWikiFeed(wikiURL + wikiID + '/page/' + wikiPageId +'/entry', false, xml => {
+					let content = xml.getElementsByTagName('summary')[0].textContent;
+
+                debugger;
+                if (content.indexOf('xcc://') >= 0) {
+						content = content.replace(
+							'xcc://',
+							getCurrentServletUrl()
+						);
+					}
+					if (content.length > 0) {
+						event.target.href = content;
+					}
+				},
+				false
+			);
+			return true;
+		}
+
+    //Erstellt Navigation aus dem Wikifeed
+		function createNav(element, wikiData, level) {
+
+			let htmlParent = document.createElement('li'),
+				a = document.createElement('a'),
+				htmlChildren,
+				i,
+				el,
+				child,
+				filterArr;
+			a.innerHTML = element.label;
+			a.id = element.id;
+			a.name = element.label;
+			a.onclick = event => retrieveUrl((event.target || event.srcElement).id, event)
+
+			htmlParent.classList.add("customNavigation");
+			htmlParent.appendChild(a);
+
+			if (element.childSize > 0) {
+				filterArr = function (obj) {
+					return obj.id === el;
+				};
+
+				htmlChildren = document.createElement('ul');
+				htmlChildren.setAttribute('class', 'navLevel-' + level);
+
+				for (i = 0; i < element.children.length; i += 1) {
+					el = element.children[i]._reference;
+					child = wikiData.items.filter(filterArr);
+					htmlChildren.appendChild(createNav(child[0], wikiData, level + 1));
+				}
+				htmlParent.appendChild(htmlChildren);
+			}
+			return htmlParent;
+		}
+
+
+        getWikiFeed(wikiURL + wikiID + "/nav/feed", true, wikiData => {
+			let tree = wikiData.items.filter(obj => obj.id === 'tree'), //JSON mit allen (Unter)seiten
+				nav = createNav(tree[0], wikiData, 0),
+				nodeList = nav.querySelector('ul').childNodes,
+                target= document.getElementById(container);
+
+			while (nodeList.length) {
+				target.insertBefore(nodeList[nodeList.length - 1], target.firstChild);
+			}
+		});
+
+
+    // Your code here...
+})();
