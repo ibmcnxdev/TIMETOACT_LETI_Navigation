@@ -1,0 +1,23 @@
+{
+   "services":[
+      "Customizer"
+   ],
+   "name":"Simple Customizer Sample",
+   "title":"LETI Integrated Navigation",
+   "description":"Add a custom Navigation to Connections",
+   "extensions":[
+      {
+         "name":"Integrated navigation",
+         "type":"com.ibm.customizer.ui",
+         "path":"homepage",
+         "payload":{
+            "include-files":[
+               "helloWorld/helloWorld.user.js"
+            ],
+            "include-repo":{
+               "name":"global-samples"
+            }
+         }
+      }
+   ]
+}
