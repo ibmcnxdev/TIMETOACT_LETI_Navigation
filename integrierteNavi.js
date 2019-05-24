@@ -118,6 +118,7 @@
             node.classList.add('headerIcons');
             nodeIMG.src = customizationDir + icon.filename;
             node.style.order = icon.order;
+            node.setAttribute('title', icon.title || '');
 
             if (icon.children) {
               node.classList.add('navmenu');
@@ -125,7 +126,7 @@
               childMenu.classList.add('navsimplelist');
               icon.children.forEach(function (child) {
                 var listElement = document.createElement('LI');
-                listElement.innerHTML = "<a href = ".concat(child.href, ">").concat(child.label, "</a>");
+                listElement.innerHTML = "<a title=\"".concat(child.title || '', "\" href = ").concat(child.href, ">").concat(child.label, "</a>");
                 childMenu.appendChild(listElement);
               });
               node.appendChild(childMenu);
@@ -234,33 +235,40 @@
         customIcons: [{
           name: 'activityStream',
           filename: 'stream_white.svg',
+          title: 'Activity Stream',
           href: '/homepage/web/updates/#myStream/imFollowing/all',
           order: 360001 // 350000 < order < 400000
 
         }, {
           name: 'communities',
+          title: 'Community',
           filename: 'communities_white.svg',
           href: '/communities/service/html/mycommunities',
           order: 360002
         }, {
           name: 'files',
           filename: 'files_white.svg',
+          title: 'Files',
           href: '/files/app#/',
           order: 360003
         }, {
           name: 'apps',
           filename: 'applications_white.svg',
+          title: 'Applications',
           children: [{
             name: '',
-            label: 'Aktivitäten',
+            title: 'Activity Stream',
+            label: 'Activity Stream',
             href: '/activities/service/html/mainpage'
           }, {
             name: '',
             label: 'Besprechungen',
+            title: 'Besprechungen',
             href: '/meetings/sthome'
           }, {
             name: '',
             label: 'Besprechungen organisieren',
+            title: 'Besprechungen organisieren',
             href: '/stmeetings/room/join/access?id=E9531-1290'
           }],
           order: 360004
