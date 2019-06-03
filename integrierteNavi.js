@@ -52,10 +52,22 @@
         }
 
         getWikiFeed("".concat(wikiURL + wikiID, "/page/").concat(wikiPageId, "/entry"), false, function (xml) {
-          var content = xml.getElementsByTagName('summary')[0].textContent;
+          var content = xml.getElementsByTagName('summary')[0].textContent,
+              contentLength = content.indexOf("fullpageWidgetId") + 53;
+
+          String.prototype.insert = function (index, string) {
+            if (index > 0) {
+              return this.substring(0, index) + string + this.substring(index, this.length);
+            }
+            return string + this;
+          };
 
           if (content.indexOf('xcc://') >= 0) {
             content = content.replace('xcc://', getCurrentServletUrl());
+          }
+
+          if (content.length > contentLength) {
+            content = content.insert(contentLength, "&");
           }
 
           if (content.length > 0) {
